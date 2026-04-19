@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Luxe Notes Studio — a premium offline-first notes app inspired by modern note-taking UX." />
+  <title>Luxe Notes Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem; --space-5: 1.25rem;
+      --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem;
+      --radius-sm: .375rem; --radius-md: .75rem; --radius-lg: 1rem; --radius-xl: 1.5rem; --radius-full: 999px;
+      --font-body: 'Manrope', Inter, sans-serif;
+      --font-display: 'Instrument Serif', Georgia, serif;
+      --color-bg: #f5f3ee;
+      --color-surface: #fbfaf7;
+      --color-surface-2: #ffffff;
+      --color-surface-offset: #ece8e0;
+      --color-surface-accent: color-mix(in oklab, #0f766e 5%, #fbfaf7);
+      --color-border: rgba(36, 32, 24, .12);
+      --color-divider: rgba(36, 32, 24, .08);
+      --color-text: #241f17;
+      --color-text-muted: #686255;
+      --color-text-faint: #9c9588;
+      --color-text-inverse: #f8f7f4;
+      --color-primary: #0f766e;
+      --color-primary-hover: #0b5e58;
+      --color-primary-soft: rgba(15, 118, 110, .12);
+      --color-primary-glow: rgba(15, 118, 110, .2);
+      --color-success: #3a7a30;
+      --color-warning: #a76420;
+      --color-danger: #b34057;
+      --shadow-sm: 0 1px 2px rgba(32, 24, 16, .06);
+      --shadow-md: 0 12px 28px rgba(36, 27, 17, .08);
+      --shadow-lg: 0 30px 80px rgba(25, 22, 18, .12);
+      --hero-mesh: radial-gradient(circle at 15% 20%, rgba(15,118,110,.12), transparent 32%), radial-gradient(circle at 85% 0%, rgba(193,133,63,.1), transparent 25%), linear-gradient(180deg, rgba(255,255,255,.65), transparent 55%);
+    }
+    [data-theme="dark"] {
+      --color-bg: #161513;
+      --color-surface: #1e1c1a;
+      --color-surface-2: #262320;
+      --color-surface-offset: #2b2724;
+      --color-surface-accent: color-mix(in oklab, #4fb1a6 8%, #1e1c1a);
+      --color-border: rgba(233, 227, 216, .12);
+      --color-divider: rgba(233, 227, 216, .08);
+      --color-text: #ece6db;
+      --color-text-muted: #beb5a7;
+      --color-text-faint: #8a8278;
+      --color-text-inverse: #171614;
+      --color-primary: #58b0a7;
+      --color-primary-hover: #6ac4ba;
+      --color-primary-soft: rgba(88,176,167,.14);
+      --color-primary-glow: rgba(88,176,167,.22);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.2);
+      --shadow-md: 0 12px 28px rgba(0,0,0,.3);
+      --shadow-lg: 0 30px 80px rgba(0,0,0,.4);
+      --hero-mesh: radial-gradient(circle at 15% 20%, rgba(88,176,167,.16), transparent 32%), radial-gradient(circle at 85% 0%, rgba(196,146,92,.12), transparent 25%), linear-gradient(180deg, rgba(255,255,255,.04), transparent 55%);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    body {
+      min-height: 100vh; font-family: var(--font-body); font-size: var(--text-base); color: var(--color-text);
+      background: var(--color-bg); line-height: 1.6; overflow-x: hidden;
+    }
+    button, input, textarea, select { font: inherit; color: inherit; }
+    button { border: 0; background: none; cursor: pointer; }
+    textarea, input, select { border: 0; outline: 0; background: transparent; }
+    img, svg { display: block; max-width: 100%; }
+    .app-shell { min-height: 100vh; display: grid; grid-template-columns: 288px minmax(0,1fr); }
+    .sidebar {
+      position: sticky; top: 0; height: 100vh; padding: var(--space-6); border-right: 1px solid var(--color-divider);
+      background: color-mix(in oklab, var(--color-surface) 88%, transparent);
+      backdrop-filter: blur(18px);
+      display: flex; flex-direction: column; gap: var(--space-6);
+    }
+    .brand { display: flex; align-items: center; gap: var(--space-3); }
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, var(--color-primary), color-mix(in oklab, var(--color-primary) 45%, #c1873f));
+      box-shadow: inset 0 1px 1px rgba(255,255,255,.45), 0 10px 22px var(--color-primary-glow); display: grid; place-items: center; color: white;
+    }
+    .brand h1 { font-size: 1.05rem; font-weight: 800; letter-spacing: -.03em; }
+    .brand p { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .nav-group, .stats, .storage-card, .tips-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); }
+    .nav-group { padding: var(--space-3); display: grid; gap: .35rem; }
+    .nav-btn {
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; padding: .9rem 1rem;
+      border-radius: 14px; color: var(--color-text-muted); transition: transform .24s cubic-bezier(.16,1,.3,1), background .24s, color .24s, box-shadow .24s;
+    }
+    .nav-btn:hover, .nav-btn.active { background: var(--color-surface-accent); color: var(--color-text); transform: translateX(3px); box-shadow: inset 0 0 0 1px rgba(15,118,110,.08); }
+    .nav-btn span { display: flex; align-items: center; gap: var(--space-3); }
+    .stats { padding: var(--space-4); display: grid; gap: var(--space-4); }
+    .stat-row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--space-3); }
+    .stat-box { padding: var(--space-4); border-radius: var(--radius-lg); background: var(--color-surface-2); border: 1px solid var(--color-divider); }
+    .stat-box strong { display: block; font-size: 1.4rem; letter-spacing: -.04em; }
+    .stat-box span { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .storage-card, .tips-card { padding: var(--space-4); display: grid; gap: var(--space-3); }
+    .progress { height: 10px; background: var(--color-surface-offset); border-radius: 999px; overflow: hidden; }
+    .progress > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--color-primary), color-mix(in oklab, var(--color-primary) 60%, #d5a14f)); border-radius: inherit; transition: width .45s ease; }
+    .main { padding: var(--space-6); display: grid; gap: var(--space-6); }
+    .topbar { display: flex; align-items: center; gap: var(--space-3); justify-content: space-between; }
+    .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: var(--space-3); }
+    .icon-btn, .theme-btn, .chip-btn, .action-btn, .fab {
+      min-width: 44px; min-height: 44px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid var(--color-border); background: color-mix(in oklab, var(--color-surface) 94%, transparent); box-shadow: var(--shadow-sm);
+      transition: transform .24s cubic-bezier(.16,1,.3,1), box-shadow .24s, background .24s;
+    }
+    .icon-btn:hover, .theme-btn:hover, .chip-btn:hover, .action-btn:hover, .fab:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .hero {
+      position: relative; overflow: hidden; border-radius: calc(var(--radius-xl) + 8px); background: var(--hero-mesh), var(--color-surface);
+      border: 1px solid var(--color-border); box-shadow: var(--shadow-lg); padding: clamp(1.25rem, 2vw, 2rem);
+      display: grid; grid-template-columns: minmax(0,1.25fr) minmax(300px,.9fr); gap: var(--space-6);
+    }
+    .hero::after {
+      content: ""; position: absolute; inset: auto -20% -35% auto; width: 360px; height: 360px; border-radius: 50%;
+      background: radial-gradient(circle, var(--color-primary-glow), transparent 62%); filter: blur(18px); animation: pulseBlob 7s ease-in-out infinite;
+    }
+    .hero-copy { position: relative; z-index: 1; }
+    .eyebrow { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .8rem; border-radius: 999px; background: var(--color-primary-soft); color: var(--color-primary); font-size: var(--text-xs); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+    .hero h2 { margin-top: var(--space-4); font-size: clamp(2rem, 3vw, 3.2rem); line-height: 1; letter-spacing: -.05em; max-width: 12ch; }
+    .hero h2 em { font-family: var(--font-display); font-style: italic; font-weight: 400; }
+    .hero p { margin-top: var(--space-4); color: var(--color-text-muted); max-width: 58ch; }
+    .hero-actions, .toolbar-chips, .card-actions, .composer-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+    .btn-primary, .btn-secondary { padding: .95rem 1.15rem; border-radius: 14px; font-size: var(--text-sm); font-weight: 700; }
+    .btn-primary { background: var(--color-primary); color: var(--color-text-inverse); box-shadow: 0 12px 24px var(--color-primary-glow); }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-secondary { background: var(--color-surface-2); border: 1px solid var(--color-border); }
+    .hero-panel {
+      position: relative; z-index: 1; align-self: stretch; background: color-mix(in oklab, var(--color-surface-2) 82%, transparent); border: 1px solid var(--color-border);
+      border-radius: calc(var(--radius-xl) + 2px); padding: var(--space-4); display: grid; gap: var(--space-3); min-height: 100%;
+    }
+    .mini-stack { display: grid; gap: .8rem; }
+    .mini-card {
+      padding: 1rem; border-radius: 1rem; border: 1px solid var(--color-divider); background: var(--color-surface);
+      transform-origin: center; animation: floatCard 6s ease-in-out infinite;
+    }
+    .mini-card:nth-child(2) { animation-delay: -2s; }
+    .mini-card:nth-child(3) { animation-delay: -4s; }
+    .workspace { display: grid; gap: var(--space-4); }
+    .searchbar, .composer, .board-toolbar { border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-xl); box-shadow: var(--shadow-md); }
+    .searchbar { padding: .95rem 1.1rem; display: flex; align-items: center; gap: .75rem; }
+    .searchbar input { width: 100%; }
+    .board-toolbar { padding: var(--space-4); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); }
+    .toolbar-chips { align-items: center; }
+    .chip-btn { padding: .7rem 1rem; min-height: 42px; font-size: var(--text-sm); }
+    .chip-btn.active { background: var(--color-primary-soft); color: var(--color-primary); border-color: transparent; }
+    .composer {
+      position: relative; overflow: hidden; padding: var(--space-5); display: grid; gap: var(--space-4);
+      background: linear-gradient(135deg, color-mix(in oklab, var(--color-surface) 88%, transparent), color-mix(in oklab, var(--color-surface-2) 88%, transparent));
+    }
+    .composer::before {
+      content: ""; position: absolute; inset: 0; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.2) 18%, transparent 36%); transform: translateX(-100%); animation: sheen 8s linear infinite;
+      pointer-events: none;
+    }
+    .composer-top { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .composer textarea { min-height: 108px; resize: vertical; }
+    .composer input.title { font-size: 1.1rem; font-weight: 700; }
+    .composer .field { border-radius: var(--radius-lg); background: var(--color-surface-2); border: 1px solid var(--color-divider); padding: .95rem 1rem; }
+    .composer .field:focus-within { border-color: color-mix(in oklab, var(--color-primary) 25%, white); box-shadow: 0 0 0 4px var(--color-primary-soft); }
+    .grid {
+      columns: 3 300px; column-gap: var(--space-4);
+    }
+    .note-card {
+      break-inside: avoid; margin-bottom: var(--space-4); border-radius: 22px; border: 1px solid var(--color-border); background: var(--note-bg, var(--color-surface));
+      box-shadow: var(--shadow-sm); padding: 1rem; display: grid; gap: .85rem; position: relative; overflow: hidden;
+      transition: transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s, border-color .28s; animation: riseIn .4s cubic-bezier(.16,1,.3,1);
+    }
+    .note-card:hover { transform: translateY(-4px) rotate(.2deg); box-shadow: var(--shadow-md); }
+    .note-card::after {
+      content: ""; position: absolute; inset: auto 0 0 0; height: 3px; background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--note-accent, var(--color-primary)) 70%, white), transparent); opacity: .7;
+    }
+    .note-header, .note-meta, .checklist { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+    .note-title { font-weight: 800; letter-spacing: -.03em; font-size: 1.05rem; }
+    .note-body { color: var(--color-text-muted); white-space: pre-wrap; }
+    .label-wrap, .pill-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .pill, .meta-pill {
+      display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .65rem; border-radius: 999px; font-size: var(--text-xs); border: 1px solid var(--color-divider); background: color-mix(in oklab, var(--color-surface-2) 70%, transparent);
+    }
+    .note-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .note-actions button {
+      padding: .55rem .7rem; border-radius: 12px; background: color-mix(in oklab, var(--color-surface-2) 86%, transparent); border: 1px solid var(--color-divider); font-size: var(--text-xs);
+    }
+    .note-actions button:hover { background: var(--color-primary-soft); }
+    .empty-state {
+      border: 1px dashed var(--color-border); border-radius: 28px; background: var(--color-surface); padding: var(--space-12); text-align: center; color: var(--color-text-muted); display: grid; place-items: center; gap: var(--space-4);
+    }
+    .empty-orb {
+      width: 82px; height: 82px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.55), transparent 35%), linear-gradient(135deg, var(--color-primary-soft), rgba(193,135,63,.18));
+      animation: floatOrb 5.5s ease-in-out infinite;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,.38), 0 18px 42px rgba(15,118,110,.12);
+    }
+    .statusbar { display: flex; justify-content: space-between; gap: var(--space-4); align-items: center; color: var(--color-text-muted); font-size: var(--text-sm); }
+    .status-live { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .75rem; border-radius: 999px; background: var(--color-surface); border: 1px solid var(--color-border); }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--color-success); box-shadow: 0 0 0 0 rgba(58,122,48,.35); animation: pulseDot 2s infinite; }
+    .fab {
+      position: fixed; right: 24px; bottom: 24px; width: 58px; height: 58px; border-radius: 18px; background: var(--color-primary); color: var(--color-text-inverse); box-shadow: 0 20px 38px var(--color-primary-glow); z-index: 20;
+    }
+    .mobile-toggle { display: none; }
+    .hidden { display: none !important; }
+    .toast {
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: var(--color-text); color: var(--color-text-inverse);
+      padding: .85rem 1rem; border-radius: 14px; box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; transition: .28s ease; z-index: 30;
+    }
+    .brand-watermark {
+      position: fixed; left: 18px; bottom: 18px; z-index: 25; display: inline-flex; align-items: center; gap: .65rem;
+      padding: .8rem 1rem; border-radius: 16px; background: color-mix(in oklab, var(--color-surface) 82%, transparent);
+      border: 1px solid var(--color-border); backdrop-filter: blur(16px); box-shadow: var(--shadow-md);
+    }
+    .watermark-mark {
+      width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; color: var(--color-text-inverse);
+      background: linear-gradient(135deg, var(--color-primary), color-mix(in oklab, var(--color-primary) 38%, #c1873f));
+      box-shadow: 0 10px 22px var(--color-primary-glow); font-size: .85rem; font-weight: 800; letter-spacing: .08em;
+    }
+    .brand-watermark strong { display: block; font-size: var(--text-sm); letter-spacing: -.02em; }
+    .brand-watermark a { color: var(--color-primary); text-decoration: none; font-size: var(--text-xs); }
+    .brand-watermark a:hover { text-decoration: underline; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .file-input { display: none; }
+    @keyframes riseIn { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes floatCard { 0%,100% { transform: translateY(0) rotate(0deg);} 50% { transform: translateY(-6px) rotate(-.35deg);} }
+    @keyframes floatOrb { 0%,100% { transform: translateY(0) scale(1);} 50% { transform: translateY(-8px) scale(1.04);} }
+    @keyframes sheen { 0% { transform: translateX(-120%);} 100% { transform: translateX(180%);} }
+    @keyframes pulseBlob { 0%,100% { transform: scale(1);} 50% { transform: scale(1.08);} }
+    @keyframes pulseDot { 0% { box-shadow: 0 0 0 0 rgba(58,122,48,.35);} 70% { box-shadow: 0 0 0 10px rgba(58,122,48,0);} 100% { box-shadow: 0 0 0 0 rgba(58,122,48,0);} }
+    @media (max-width: 1080px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed; inset: 0 auto 0 0; width: min(86vw, 320px); z-index: 40; transform: translateX(-102%); transition: transform .3s cubic-bezier(.16,1,.3,1);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-toggle { display: inline-flex; }
+      .hero { grid-template-columns: 1fr; }
+      .composer-top { grid-template-columns: 1fr; }
+      .grid { columns: 2 260px; }
+    }
+    @media (max-width: 720px) {
+      .main { padding: var(--space-4); }
+      .topbar, .board-toolbar, .statusbar { flex-direction: column; align-items: stretch; }
+      .toolbar-right, .toolbar-left { justify-content: space-between; }
+      .grid { columns: 1 100%; }
+      .hero { padding: var(--space-5); }
+      .hero h2 { max-width: 100%; }
+      .brand-watermark { left: 12px; right: 12px; bottom: 12px; width: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="Luxe Notes logo">
+            <path d="M5 19.5 12 3l7 16.5"></path>
+            <path d="M8.4 12.2h7.2"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>Luxe Notes Studio</h1>
+          <p>Offline-first notes, saved on this device</p>
+        </div>
+      </div>
+
+      <nav class="nav-group" aria-label="Primary views">
+        <button class="nav-btn active" data-view="all"><span>✦ All notes</span><strong id="navAll">0</strong></button>
+        <button class="nav-btn" data-view="pinned"><span>📌 Pinned</span><strong id="navPinned">0</strong></button>
+        <button class="nav-btn" data-view="checklist"><span>☑ Checklists</span><strong id="navChecklist">0</strong></button>
+        <button class="nav-btn" data-view="archive"><span>🗄 Archive</span><strong id="navArchive">0</strong></button>
+        <button class="nav-btn" data-view="ideas"><span>⚡ Ideas</span><strong id="navIdeas">0</strong></button>
+      </nav>
+
+      <section class="stats" aria-label="Workspace stats">
+        <div>
+          <p style="font-size:var(--text-xs); color:var(--color-text-muted); text-transform:uppercase; letter-spacing:.08em;">Workspace pulse</p>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box"><strong id="statNotes">0</strong><span>Saved notes</span></div>
+          <div class="stat-box"><strong id="statWords">0</strong><span>Total words</span></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box"><strong id="statLabels">0</strong><span>Active labels</span></div>
+          <div class="stat-box"><strong id="statPinned">0</strong><span>Pinned items</span></div>
+        </div>
+      </section>
+
+      <section class="storage-card">
+        <div style="display:flex;justify-content:space-between;gap:1rem;align-items:center;">
+          <strong>Device storage</strong>
+          <span id="storageText" style="font-size:var(--text-xs); color:var(--color-text-muted);">0 KB</span>
+        </div>
+        <div class="progress" aria-hidden="true"><i id="storageBar"></i></div>
+        <p style="font-size:var(--text-xs); color:var(--color-text-muted);">Everything here is saved locally in your browser on this device. Export a backup for extra safety.</p>
+      </section>
+
+      <section class="tips-card">
+        <strong>Pro tools</strong>
+        <p style="font-size:var(--text-sm); color:var(--color-text-muted);">Smart search, labels, checklist mode, pinning, local backups, restore, color themes, archive, and fast offline use.</p>
+      </section>
+    </aside>
+
+    <main class="main" id="main-content">
+      <header class="topbar">
+        <div class="toolbar-left">
+          <button class="icon-btn mobile-toggle" id="mobileToggle" aria-label="Toggle sidebar">☰</button>
+          <button class="theme-btn" id="themeToggle" aria-label="Toggle theme">◐</button>
+          <div class="status-live"><span class="dot"></span><span id="saveState">Saved on this device</span></div>
+        </div>
+        <div class="toolbar-right">
+          <button class="action-btn" id="seedBtn">Load samples</button>
+          <button class="action-btn" id="exportBtn">Export backup</button>
+          <label class="action-btn" for="importFile" style="display:inline-flex;">Restore backup</label>
+          <input class="file-input" id="importFile" type="file" accept="application/json">
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">Premium note workspace</span>
+          <h2>Capture faster. Organize smarter. Feel <em>delight</em> every day.</h2>
+          <p>A polished, Google Keep-style notes experience with richer visuals, better motion, checklist workflows, smart filtering, instant local saves, archive tools, and backup control.</p>
+          <div class="hero-actions" style="margin-top:1.2rem;">
+            <button class="btn-primary" id="focusComposer">Create a note</button>
+            <button class="btn-secondary" id="smartSeed">Generate creative examples</button>
+          </div>
+        </div>
+        <div class="hero-panel" aria-label="Preview features panel">
+          <div style="display:flex;justify-content:space-between;gap:1rem;align-items:center;">
+            <strong>What feels pro here</strong>
+            <span class="meta-pill">Offline-first</span>
+          </div>
+          <div class="mini-stack">
+            <div class="mini-card"><strong>Instant save</strong><p style="color:var(--color-text-muted); font-size:var(--text-sm);">Each edit is stored locally on this device in seconds.</p></div>
+            <div class="mini-card"><strong>Elegant motion</strong><p style="color:var(--color-text-muted); font-size:var(--text-sm);">Hover lift, note entrance, pulse sync, floating empty states.</p></div>
+            <div class="mini-card"><strong>Useful power features</strong><p style="color:var(--color-text-muted); font-size:var(--text-sm);">Pinning, color moods, checklist notes, export, restore, archive, smart search.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="searchbar">
+          <span aria-hidden="true">⌕</span>
+          <input id="searchInput" type="search" placeholder="Search notes, labels, tags, checklist items, or keywords" />
+        </div>
+
+        <section class="composer" aria-label="New note composer">
+          <div class="composer-top">
+            <div class="field"><input class="title" id="noteTitle" type="text" maxlength="120" placeholder="Title your idea, meeting note, plan, or reminder" /></div>
+            <div class="field"><input id="noteLabels" type="text" placeholder="Labels, comma separated — e.g. work, ideas, travel" /></div>
+          </div>
+          <div class="field"><textarea id="noteBody" placeholder="Write the note here... Use lines for ideas, meeting notes, or rich thought dumps."></textarea></div>
+          <div class="composer-actions" style="justify-content:space-between; align-items:center;">
+            <div class="card-actions">
+              <button class="chip-btn" id="toggleChecklist" type="button">Checklist mode</button>
+              <select class="chip-btn" id="noteColor" aria-label="Select note color">
+                <option value="sand">Warm Sand</option>
+                <option value="mint">Mint Focus</option>
+                <option value="rose">Rose Glow</option>
+                <option value="sky">Sky Clarity</option>
+                <option value="amber">Amber Spark</option>
+              </select>
+              <button class="chip-btn" id="togglePin" type="button">Pin note</button>
+            </div>
+            <button class="btn-primary" id="saveNoteBtn">Save note</button>
+          </div>
+        </section>
+
+        <section class="board-toolbar">
+          <div class="toolbar-chips">
+            <button class="chip-btn active" data-filter="all">All</button>
+            <button class="chip-btn" data-filter="today">Today</button>
+            <button class="chip-btn" data-filter="pinned">Pinned</button>
+            <button class="chip-btn" data-filter="checklist">Checklist</button>
+            <button class="chip-btn" data-filter="archived">Archived</button>
+          </div>
+          <div class="toolbar-chips">
+            <button class="chip-btn" id="sortBtn">Newest first</button>
+            <button class="chip-btn" id="clearArchiveBtn">Clear archive</button>
+            <button class="chip-btn" id="clearAllBtn">Delete all</button>
+          </div>
+        </section>
+
+        <section id="notesArea">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-orb" aria-hidden="true"></div>
+            <h3 style="font-size:var(--text-lg); letter-spacing:-.03em;">Your premium board is ready</h3>
+            <p>Start with a thought, a plan, or a checklist. Every note will be saved on this device automatically.</p>
+          </div>
+          <div class="grid hidden" id="notesGrid"></div>
+        </section>
+
+        <div class="statusbar">
+          <p id="footerInfo">0 notes ready for focus.</p>
+          <p>Tip: Export a backup after important work sessions.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <button class="fab" id="fab" aria-label="Create a note">＋</button>
+  <div class="toast" id="toast"></div>
+
+  <div class="brand-watermark" aria-label="Brand watermark">
+    <div class="watermark-mark">C</div>
+    <div>
+      <strong>Built by RITAM MALLIK</strong>
+      <a href="https://www.linkedin.com/in/ritam-mallik" target="_blank" rel="noopener noreferrer">linkedin.com/in/ritam-mallik</a><br><small>Designed with Perplexity</small>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'luxe-notes-studio-v2';
+    const state = {
+      notes: [],
+      query: '',
+      view: 'all',
+      sort: 'newest',
+      composerChecklist: false,
+      composerPinned: false,
+      theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    };
+
+    const els = {
+      sidebar: document.getElementById('sidebar'),
+      mobileToggle: document.getElementById('mobileToggle'),
+      themeToggle: document.getElementById('themeToggle'),
+      notesGrid: document.getElementById('notesGrid'),
+      emptyState: document.getElementById('emptyState'),
+      searchInput: document.getElementById('searchInput'),
+      noteTitle: document.getElementById('noteTitle'),
+      noteBody: document.getElementById('noteBody'),
+      noteLabels: document.getElementById('noteLabels'),
+      noteColor: document.getElementById('noteColor'),
+      saveNoteBtn: document.getElementById('saveNoteBtn'),
+      toggleChecklist: document.getElementById('toggleChecklist'),
+      togglePin: document.getElementById('togglePin'),
+      saveState: document.getElementById('saveState'),
+      toast: document.getElementById('toast'),
+      sortBtn: document.getElementById('sortBtn'),
+      footerInfo: document.getElementById('footerInfo'),
+      seedBtn: document.getElementById('seedBtn'),
+      smartSeed: document.getElementById('smartSeed'),
+      exportBtn: document.getElementById('exportBtn'),
+      importFile: document.getElementById('importFile'),
+      clearArchiveBtn: document.getElementById('clearArchiveBtn'),
+      clearAllBtn: document.getElementById('clearAllBtn'),
+      focusComposer: document.getElementById('focusComposer'),
+      fab: document.getElementById('fab'),
+      statNotes: document.getElementById('statNotes'),
+      statWords: document.getElementById('statWords'),
+      statLabels: document.getElementById('statLabels'),
+      statPinned: document.getElementById('statPinned'),
+      storageText: document.getElementById('storageText'),
+      storageBar: document.getElementById('storageBar'),
+      navAll: document.getElementById('navAll'),
+      navPinned: document.getElementById('navPinned'),
+      navChecklist: document.getElementById('navChecklist'),
+      navArchive: document.getElementById('navArchive'),
+      navIdeas: document.getElementById('navIdeas')
+    };
+
+    const colorMap = {
+      sand: ['#fff7e9', '#c1873f'],
+      mint: ['#edfdf7', '#1d8f7a'],
+      rose: ['#fff0f3', '#c25576'],
+      sky: ['#eef7ff', '#4f7ca5'],
+      amber: ['#fff5df', '#b5791c']
+    };
+
+    function uid() { return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()); }
+    function showToast(msg) {
+      els.toast.textContent = msg;
+      els.toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => els.toast.classList.remove('show'), 1900);
+    }
+    function setSavedState(msg = 'Saved on this device') {
+      els.saveState.textContent = msg;
+      clearTimeout(setSavedState._t);
+      setSavedState._t = setTimeout(() => { els.saveState.textContent = 'Saved on this device'; }, 1500);
+    }
+    function applyTheme() { document.documentElement.setAttribute('data-theme', state.theme); }
+    function persist() {
+      const payload = { notes: state.notes, theme: state.theme, updatedAt: new Date().toISOString() };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      setSavedState('Auto-saved locally');
+      updateStorageMeter();
+    }
+    function load() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        state.notes = Array.isArray(parsed.notes) ? parsed.notes : [];
+        if (parsed.theme) state.theme = parsed.theme;
+      } catch (e) {
+        console.warn('Could not load notes', e);
+      }
+    }
+    function updateStorageMeter() {
+      const raw = localStorage.getItem(STORAGE_KEY) || '';
+      const bytes = new Blob([raw]).size;
+      const kb = (bytes / 1024).toFixed(1);
+      els.storageText.textContent = kb + ' KB';
+      const pct = Math.min((bytes / (4.5 * 1024 * 1024)) * 100, 100);
+      els.storageBar.style.width = pct + '%';
+    }
+    function noteWords(note) {
+      const text = [note.title, note.body, ...(note.checklist || [])].join(' ').trim();
+      return text ? text.split(/\s+/).length : 0;
+    }
+    function summarize() {
+      const labels = new Set();
+      let words = 0, pinned = 0, checklist = 0, archive = 0, ideas = 0;
+      state.notes.forEach(note => {
+        (note.labels || []).forEach(label => labels.add(label.toLowerCase()));
+        words += noteWords(note);
+        if (note.pinned) pinned += 1;
+        if (note.type === 'checklist') checklist += 1;
+        if (note.archived) archive += 1;
+        if ((note.labels || []).some(l => /idea|creative|brainstorm/i.test(l)) || /idea|brainstorm/i.test((note.title || '') + ' ' + (note.body || ''))) ideas += 1;
+      });
+      animateValue(els.statNotes, state.notes.length);
+      animateValue(els.statWords, words);
+      animateValue(els.statLabels, labels.size);
+      animateValue(els.statPinned, pinned);
+      els.navAll.textContent = state.notes.length;
+      els.navPinned.textContent = pinned;
+      els.navChecklist.textContent = checklist;
+      els.navArchive.textContent = archive;
+      els.navIdeas.textContent = ideas;
+    }
+    function animateValue(el, next) {
+      const start = Number(el.textContent.replace(/,/g,'')) || 0;
+      const duration = 320;
+      const startAt = performance.now();
+      function frame(now) {
+        const p = Math.min((now - startAt) / duration, 1);
+        const value = Math.round(start + (next - start) * (1 - Math.pow(1 - p, 3)));
+        el.textContent = value.toLocaleString();
+        if (p < 1) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+    function parseLabels(input) {
+      return input.split(',').map(v => v.trim()).filter(Boolean).slice(0, 8);
+    }
+    function createNoteFromComposer() {
+      const title = els.noteTitle.value.trim();
+      const body = els.noteBody.value.trim();
+      const labels = parseLabels(els.noteLabels.value);
+      if (!title && !body) { showToast('Add a title or note content first'); return; }
+      const color = els.noteColor.value;
+      const rawLines = body.split('\n').map(v => v.trim()).filter(Boolean);
+      const checklist = state.composerChecklist ? rawLines : [];
+      state.notes.unshift({
+        id: uid(), title, body: state.composerChecklist ? '' : body, labels, color,
+        type: state.composerChecklist ? 'checklist' : 'text', checklist,
+        pinned: state.composerPinned, archived: false, createdAt: Date.now(), updatedAt: Date.now()
+      });
+      els.noteTitle.value = '';
+      els.noteBody.value = '';
+      els.noteLabels.value = '';
+      els.noteColor.value = 'sand';
+      state.composerChecklist = false;
+      state.composerPinned = false;
+      syncComposerButtons();
+      persist(); render(); showToast('Note saved beautifully');
+    }
+    function syncComposerButtons() {
+      els.toggleChecklist.classList.toggle('active', state.composerChecklist);
+      els.togglePin.classList.toggle('active', state.composerPinned);
+      els.toggleChecklist.textContent = state.composerChecklist ? 'Checklist on' : 'Checklist mode';
+      els.togglePin.textContent = state.composerPinned ? 'Pinned' : 'Pin note';
+      els.noteBody.placeholder = state.composerChecklist ? 'Write one checklist item per line' : 'Write the note here... Use lines for ideas, meeting notes, or rich thought dumps.';
+    }
+    function toggleChecklistItem(noteId, index) {
+      const note = state.notes.find(n => n.id === noteId);
+      if (!note || !note.checklist) return;
+      if (!note.done) note.done = [];
+      note.done[index] = !note.done[index];
+      note.updatedAt = Date.now();
+      persist(); render();
+    }
+    function archiveNote(id) {
+      const note = state.notes.find(n => n.id === id);
+      if (!note) return;
+      note.archived = !note.archived; note.updatedAt = Date.now(); persist(); render();
+      showToast(note.archived ? 'Moved to archive' : 'Restored from archive');
+    }
+    function pinNote(id) {
+      const note = state.notes.find(n => n.id === id);
+      if (!note) return;
+      note.pinned = !note.pinned; note.updatedAt = Date.now(); persist(); render();
+    }
+    function cycleColor(id) {
+      const note = state.notes.find(n => n.id === id);
+      if (!note) return;
+      const keys = Object.keys(colorMap); const idx = keys.indexOf(note.color || 'sand');
+      note.color = keys[(idx + 1) % keys.length]; note.updatedAt = Date.now(); persist(); render();
+    }
+    function deleteNote(id) {
+      state.notes = state.notes.filter(n => n.id !== id); persist(); render(); showToast('Note deleted');
+    }
+    function formatDate(ts) {
+      return new Date(ts).toLocaleString([], { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+    function filteredNotes() {
+      const q = state.query.trim().toLowerCase();
+      let notes = [...state.notes];
+      notes = notes.filter(note => {
+        if (state.view === 'pinned' && !note.pinned) return false;
+        if (state.view === 'archive' && !note.archived) return false;
+        if (state.view === 'checklist' && note.type !== 'checklist') return false;
+        if (state.view === 'ideas') {
+          const joined = [note.title, note.body, ...(note.labels||[])].join(' ').toLowerCase();
+          if (!/idea|brainstorm|creative/.test(joined)) return false;
+        }
+        if (state.view === 'all' && false) return false;
+        return true;
+      });
+      const chip = document.querySelector('.chip-btn.active[data-filter]')?.dataset.filter || 'all';
+      notes = notes.filter(note => {
+        if (chip === 'today') return new Date(note.updatedAt).toDateString() === new Date().toDateString();
+        if (chip === 'pinned') return note.pinned;
+        if (chip === 'checklist') return note.type === 'checklist';
+        if (chip === 'archived') return note.archived;
+        return true;
+      });
+      if (q) {
+        notes = notes.filter(note => {
+          const blob = [note.title, note.body, ...(note.labels || []), ...(note.checklist || [])].join(' ').toLowerCase();
+          return blob.includes(q);
+        });
+      }
+      notes.sort((a, b) => {
+        const pinBias = Number(b.pinned) - Number(a.pinned);
+        if (pinBias !== 0) return pinBias;
+        return state.sort === 'newest' ? b.updatedAt - a.updatedAt : a.updatedAt - b.updatedAt;
+      });
+      return notes;
+    }
+    function render() {
+      const notes = filteredNotes();
+      els.notesGrid.innerHTML = '';
+      if (!notes.length) {
+        els.emptyState.classList.remove('hidden');
+        els.notesGrid.classList.add('hidden');
+      } else {
+        els.emptyState.classList.add('hidden');
+        els.notesGrid.classList.remove('hidden');
+      }
+      notes.forEach(note => {
+        const [bg, accent] = colorMap[note.color || 'sand'] || colorMap.sand;
+        const card = document.createElement('article');
+        card.className = 'note-card';
+        card.style.setProperty('--note-bg', `color-mix(in oklab, ${bg} 88%, var(--color-surface))`);
+        card.style.setProperty('--note-accent', accent);
+        const checklistHTML = note.type === 'checklist' ? `
+          <div class="checklist" style="display:grid; gap:.55rem;">
+            ${(note.checklist || []).map((item, index) => `
+              <label class="pill" style="justify-content:flex-start; padding:.65rem .8rem; border-radius:14px; background:rgba(255,255,255,.35); cursor:pointer; text-decoration:${note.done?.[index] ? 'line-through' : 'none'}; opacity:${note.done?.[index] ? '.65' : '1'};">
+                <input type="checkbox" ${note.done?.[index] ? 'checked' : ''} data-check-id="${note.id}" data-check-index="${index}" style="margin-right:.5rem;" /> ${item}
+              </label>`).join('')}
+          </div>` : `<p class="note-body">${escapeHtml(note.body || '')}</p>`;
+        card.innerHTML = `
+          <div class="note-header">
+            <div>
+              <div class="pill-row">
+                ${note.pinned ? '<span class="meta-pill">Pinned</span>' : ''}
+                ${note.archived ? '<span class="meta-pill">Archived</span>' : ''}
+                <span class="meta-pill">${note.type === 'checklist' ? 'Checklist' : 'Text note'}</span>
+              </div>
+              <h3 class="note-title" style="margin-top:.55rem;">${escapeHtml(note.title || 'Untitled note')}</h3>
+            </div>
+            <span class="pill" style="border-color:transparent; background:color-mix(in oklab, ${accent} 16%, white); color:${accent};">${noteWords(note)} words</span>
+          </div>
+          ${checklistHTML}
+          <div class="label-wrap">
+            ${(note.labels || []).map(label => `<span class="pill">#${escapeHtml(label)}</span>`).join('')}
+          </div>
+          <div class="note-meta">
+            <span style="font-size:var(--text-xs); color:var(--color-text-muted);">Updated ${formatDate(note.updatedAt)}</span>
+          </div>
+          <div class="note-actions">
+            <button data-action="pin" data-id="${note.id}">${note.pinned ? 'Unpin' : 'Pin'}</button>
+            <button data-action="archive" data-id="${note.id}">${note.archived ? 'Restore' : 'Archive'}</button>
+            <button data-action="color" data-id="${note.id}">Color</button>
+            <button data-action="delete" data-id="${note.id}">Delete</button>
+          </div>
+        `;
+        els.notesGrid.appendChild(card);
+      });
+      summarize();
+      els.footerInfo.textContent = `${notes.length} notes ready for focus.`;
+    }
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[s]));
+    }
+    function seedNotes() {
+      if (state.notes.length && !confirm('Replace your current workspace with premium sample notes?')) return;
+      const now = Date.now();
+      state.notes = [
+        { id: uid(), title: 'Launch story angles', body: 'Lead with the instant-save promise. Show how notes stay on device. Mention clean motion and premium design details.', labels: ['ideas','brand'], color: 'sand', type: 'text', checklist: [], pinned: true, archived: false, createdAt: now-8000000, updatedAt: now-400000 },
+        { id: uid(), title: 'Founder daily checklist', body: '', labels: ['work','checklist'], color: 'mint', type: 'checklist', checklist: ['Review roadmap priorities','Send investor summary','Polish onboarding flow','Export backup after meeting'], done: [true,false,false,false], pinned: true, archived: false, createdAt: now-9000000, updatedAt: now-300000 },
+        { id: uid(), title: 'Travel packing lite', body: '', labels: ['travel'], color: 'sky', type: 'checklist', checklist: ['Passport','Chargers','Notebook','Noise-canceling headphones'], done: [true,true,false,false], pinned: false, archived: false, createdAt: now-6000000, updatedAt: now-1500000 },
+        { id: uid(), title: 'Creative hooks', body: 'What if note-taking felt luxurious instead of mechanical? What if your second brain had cinematic motion and still stayed simple?', labels: ['creative','brainstorm'], color: 'rose', type: 'text', checklist: [], pinned: false, archived: false, createdAt: now-3000000, updatedAt: now-600000 },
+        { id: uid(), title: 'Archived reference', body: 'Old structure for hero copy. Keep for reference but no longer active.', labels: ['archive'], color: 'amber', type: 'text', checklist: [], pinned: false, archived: true, createdAt: now-12000000, updatedAt: now-11000000 }
+      ];
+      persist(); render(); showToast('Premium samples loaded');
+    }
+    function exportBackup() {
+      const payload = { exportedAt: new Date().toISOString(), source: 'Luxe Notes Studio', notes: state.notes };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'luxe-notes-backup.json'; a.click();
+      URL.revokeObjectURL(url);
+      showToast('Backup exported');
+    }
+    function importBackup(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (!Array.isArray(parsed.notes)) throw new Error('Invalid backup');
+          state.notes = parsed.notes;
+          persist(); render(); showToast('Backup restored');
+        } catch (e) { showToast('Backup file could not be restored'); }
+      };
+      reader.readAsText(file);
+    }
+
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      state.view = btn.dataset.view; render();
+      els.sidebar.classList.remove('open');
+    }));
+    document.querySelectorAll('.chip-btn[data-filter]').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.chip-btn[data-filter]').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active'); render();
+    }));
+    els.mobileToggle.addEventListener('click', () => els.sidebar.classList.toggle('open'));
+    els.themeToggle.addEventListener('click', () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; applyTheme(); persist(); });
+    els.searchInput.addEventListener('input', e => { state.query = e.target.value; render(); });
+    els.saveNoteBtn.addEventListener('click', createNoteFromComposer);
+    els.toggleChecklist.addEventListener('click', () => { state.composerChecklist = !state.composerChecklist; syncComposerButtons(); });
+    els.togglePin.addEventListener('click', () => { state.composerPinned = !state.composerPinned; syncComposerButtons(); });
+    els.sortBtn.addEventListener('click', () => { state.sort = state.sort === 'newest' ? 'oldest' : 'newest'; els.sortBtn.textContent = state.sort === 'newest' ? 'Newest first' : 'Oldest first'; render(); });
+    els.seedBtn.addEventListener('click', seedNotes);
+    els.smartSeed.addEventListener('click', seedNotes);
+    els.exportBtn.addEventListener('click', exportBackup);
+    els.importFile.addEventListener('change', e => { if (e.target.files[0]) importBackup(e.target.files[0]); e.target.value = ''; });
+    els.clearArchiveBtn.addEventListener('click', () => {
+      state.notes = state.notes.filter(n => !n.archived); persist(); render(); showToast('Archive cleared');
+    });
+    els.clearAllBtn.addEventListener('click', () => {
+      if (!confirm('Delete every note from this device?')) return;
+      state.notes = []; persist(); render(); showToast('All notes deleted');
+    });
+    els.focusComposer.addEventListener('click', () => els.noteTitle.focus());
+    els.fab.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => els.noteTitle.focus(), 180); });
+    els.notesGrid.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const { action, id } = btn.dataset;
+      if (action === 'pin') pinNote(id);
+      if (action === 'archive') archiveNote(id);
+      if (action === 'color') cycleColor(id);
+      if (action === 'delete') deleteNote(id);
+    });
+    els.notesGrid.addEventListener('change', e => {
+      if (e.target.matches('[data-check-id]')) toggleChecklistItem(e.target.dataset.checkId, Number(e.target.dataset.checkIndex));
+    });
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') createNoteFromComposer();
+      if (e.key === 'Escape') els.sidebar.classList.remove('open');
+    });
+
+    load(); applyTheme(); syncComposerButtons(); updateStorageMeter(); render();
+  </script>
+</body>
+</html>
